@@ -2,21 +2,36 @@ use std::ops::RangeInclusive;
 
 const WINDOW_SIZE: (usize, usize) = (200, 32);
 
-fn main() {
-    let top_down = &mut [["."; WINDOW_SIZE.0]; WINDOW_SIZE.1];
-    insert_to_array(top_down, 1, 20, "0");
+struct AsciiTABLE<'a> {
+    line: &'a str,
+    circle: &'a str,
+    bg: &'a str,
+    player: &'a str,
+}
 
+static TABLE: AsciiTABLE = AsciiTABLE {
+    line: "3",
+    circle: "C",
+    bg: ".",
+    player: "8",
+};
+
+fn main() {
+    let top_down = &mut [[TABLE.bg; WINDOW_SIZE.0]; WINDOW_SIZE.1];
+    insert_to_array(top_down, 1, 20, TABLE.player);
+
+    let circle = Circle {
+        center: (100, 16),
+        radius: 15,
+        height_ratio: 1.0 / 2.0,
+    };
     let line1 = Line {
-        point1: (100, 30),
-        point2: (50, 20),
+        point1: (circle.center.0 as usize, circle.center.1 as usize),
+        point2: (150, 10),
     };
     let line2 = Line {
         point2: (30, 20),
         ..line1
-    };
-    let circle = Circle {
-        center: (80, 15),
-        radius: 15,
     };
 
     line1.overlay(top_down);
@@ -29,6 +44,7 @@ fn main() {
 struct Circle {
     center: (i32, i32),
     radius: i32,
+    height_ratio: f64,
 }
 
 impl Circle {
@@ -36,19 +52,19 @@ impl Circle {
         let range = -1 * self.radius..=self.radius;
         for x in range {
             //print!("x: {x}");
-            let y = ((self.radius * self.radius - x * x) as f64).sqrt();
+            let y = ((self.radius * self.radius - x * x) as f64).sqrt() * self.height_ratio;
             //println!("  y: {}", y.floor());
             insert_to_array(
                 array,
                 x as i32 + self.center.0,
                 y.floor() as i32 + self.center.1,
-                "*",
+                TABLE.circle,
             );
             insert_to_array(
                 array,
                 x as i32 + self.center.0,
                 -y.floor() as i32 + self.center.1,
-                "*",
+                TABLE.circle,
             );
         }
     }
@@ -71,7 +87,7 @@ impl Line {
 
         if self.point1.0 == self.point2.0 {
             for y in 1..=WINDOW_SIZE.1 as i32 {
-                insert_to_array(array, self.point1.0 as i32, y, "*")
+                insert_to_array(array, self.point1.0 as i32, y, TABLE.line)
             }
         } else {
             let tan: f64 = (self.point1.1 as f64 - self.point2.1 as f64)
@@ -85,7 +101,7 @@ impl Line {
                 //println!("x: {x}");
                 let y = (tan * x as f64 + offset) as i32;
                 //println!("y: {y}");
-                insert_to_array(array, x, y, "*");
+                insert_to_array(array, x, y, TABLE.line);
             }
         }
     }
