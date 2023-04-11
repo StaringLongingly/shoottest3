@@ -23,7 +23,7 @@ fn main() {
     let circle = Circle {
         center: (100, 16),
         radius: 15,
-        height_ratio: 1.0 / 2.0,
+        height_ratio: 1.0 / 2.1,
     };
     let line1 = Line {
         point1: (circle.center.0 as usize, circle.center.1 as usize),
@@ -49,21 +49,33 @@ struct Circle {
 
 impl Circle {
     fn overlay(self, array: &mut [[&str; WINDOW_SIZE.0]; WINDOW_SIZE.1]) {
-        let range = -1 * self.radius..=self.radius;
-        for x in range {
+        for x in -1 * self.radius..=self.radius {
             //print!("x: {x}");
-            let y = ((self.radius * self.radius - x * x) as f64).sqrt() * self.height_ratio;
+            let y = ((self.radius * self.radius - x * x) as f64).sqrt();
             //println!("  y: {}", y.floor());
+            let x = x as f64;
             insert_to_array(
                 array,
                 x as i32 + self.center.0,
-                y.floor() as i32 + self.center.1,
+                (y * self.height_ratio).round() as i32 + self.center.1,
                 TABLE.circle,
             );
             insert_to_array(
                 array,
                 x as i32 + self.center.0,
-                -y.floor() as i32 + self.center.1,
+                (y * -self.height_ratio).round() as i32 + self.center.1,
+                TABLE.circle,
+            );
+            insert_to_array(
+                array,
+                y.round() as i32 + self.center.0,
+                (x * self.height_ratio) as i32 + self.center.1,
+                TABLE.circle,
+            );
+            insert_to_array(
+                array,
+                -y.round() as i32 + self.center.0,
+                (x * self.height_ratio) as i32 + self.center.1,
                 TABLE.circle,
             );
         }
